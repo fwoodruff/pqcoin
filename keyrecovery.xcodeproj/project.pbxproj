@@ -103,6 +103,7 @@
 		66F1EE0128CBC0C800A53CBF /* merkle_tree.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = merkle_tree.hpp; sourceTree = "<group>"; };
 		66F1EE0328CBC16100A53CBF /* block_header.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = block_header.cpp; sourceTree = "<group>"; };
 		66F1EE0428CBC16100A53CBF /* block_header.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = block_header.hpp; sourceTree = "<group>"; };
+		66F1EE0728CBEF6400A53CBF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +120,7 @@
 		66B5B18D28285AD0007AE9F2 = {
 			isa = PBXGroup;
 			children = (
+				66F1EE0728CBEF6400A53CBF /* .gitignore */,
 				66B5B19828285AD0007AE9F2 /* keyrecovery */,
 				66B5B19728285AD0007AE9F2 /* Products */,
 			);
