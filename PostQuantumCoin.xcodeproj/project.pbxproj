@@ -59,7 +59,7 @@
 		668DB0EF28BC15B4009F4313 /* blocking_queue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = blocking_queue.cpp; sourceTree = "<group>"; };
 		668DB0F128BE60F3009F4313 /* cached_file_io.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = cached_file_io.cpp; sourceTree = "<group>"; };
 		668DB0F328C4B144009F4313 /* bignum.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = bignum.hpp; sourceTree = "<group>"; };
-		66B5B19628285AD0007AE9F2 /* keyrecovery */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = keyrecovery; sourceTree = BUILT_PRODUCTS_DIR; };
+		66B5B19628285AD0007AE9F2 /* PostQuantumCoin */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PostQuantumCoin; sourceTree = BUILT_PRODUCTS_DIR; };
 		66B5B19928285AD0007AE9F2 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		66B5B1A128285ADA007AE9F2 /* shake.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = shake.cpp; sourceTree = "<group>"; };
 		66B5B1A228285ADA007AE9F2 /* common.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = common.cpp; sourceTree = "<group>"; };
@@ -123,7 +123,7 @@
 			children = (
 				664C49B328CF25D3002EBDF8 /* README.md */,
 				66F1EE0728CBEF6400A53CBF /* .gitignore */,
-				66B5B19828285AD0007AE9F2 /* keyrecovery */,
+				66B5B19828285AD0007AE9F2 /* PostQuantumCoin */,
 				66B5B19728285AD0007AE9F2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -131,12 +131,12 @@
 		66B5B19728285AD0007AE9F2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				66B5B19628285AD0007AE9F2 /* keyrecovery */,
+				66B5B19628285AD0007AE9F2 /* PostQuantumCoin */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		66B5B19828285AD0007AE9F2 /* keyrecovery */ = {
+		66B5B19828285AD0007AE9F2 /* PostQuantumCoin */ = {
 			isa = PBXGroup;
 			children = (
 				66B5B19928285AD0007AE9F2 /* main.cpp */,
@@ -144,7 +144,7 @@
 				66EA370A283AD4640025949D /* Utility */,
 				66EA370B283AD49E0025949D /* Controller */,
 			);
-			path = keyrecovery;
+			path = PostQuantumCoin;
 			sourceTree = "<group>";
 		};
 		66B5B1B828285C10007AE9F2 /* Falcon */ = {
@@ -245,9 +245,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		66B5B19528285AD0007AE9F2 /* keyrecovery */ = {
+		66B5B19528285AD0007AE9F2 /* PostQuantumCoin */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 66B5B19D28285AD0007AE9F2 /* Build configuration list for PBXNativeTarget "keyrecovery" */;
+			buildConfigurationList = 66B5B19D28285AD0007AE9F2 /* Build configuration list for PBXNativeTarget "PostQuantumCoin" */;
 			buildPhases = (
 				66B5B19228285AD0007AE9F2 /* Sources */,
 				66B5B19328285AD0007AE9F2 /* Frameworks */,
@@ -257,9 +257,9 @@
 			);
 			dependencies = (
 			);
-			name = keyrecovery;
+			name = PostQuantumCoin;
 			productName = keyrecovery;
-			productReference = 66B5B19628285AD0007AE9F2 /* keyrecovery */;
+			productReference = 66B5B19628285AD0007AE9F2 /* PostQuantumCoin */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -276,7 +276,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 66B5B19128285AD0007AE9F2 /* Build configuration list for PBXProject "keyrecovery" */;
+			buildConfigurationList = 66B5B19128285AD0007AE9F2 /* Build configuration list for PBXProject "PostQuantumCoin" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -289,7 +289,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				66B5B19528285AD0007AE9F2 /* keyrecovery */,
+				66B5B19528285AD0007AE9F2 /* PostQuantumCoin */,
 			);
 		};
 /* End PBXProject section */
@@ -464,7 +464,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		66B5B19128285AD0007AE9F2 /* Build configuration list for PBXProject "keyrecovery" */ = {
+		66B5B19128285AD0007AE9F2 /* Build configuration list for PBXProject "PostQuantumCoin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				66B5B19B28285AD0007AE9F2 /* Debug */,
@@ -473,7 +473,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		66B5B19D28285AD0007AE9F2 /* Build configuration list for PBXNativeTarget "keyrecovery" */ = {
+		66B5B19D28285AD0007AE9F2 /* Build configuration list for PBXNativeTarget "PostQuantumCoin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				66B5B19E28285AD0007AE9F2 /* Debug */,

@@ -16,8 +16,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "66B5B19528285AD0007AE9F2"
                BuildableName = "keyrecovery"
-               BlueprintName = "keyrecovery"
-               ReferencedContainer = "container:keyrecovery.xcodeproj">
+               BlueprintName = "PostQuantumCoin"
+               ReferencedContainer = "container:PostQuantumCoin.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -49,8 +49,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "66B5B19528285AD0007AE9F2"
             BuildableName = "keyrecovery"
-            BlueprintName = "keyrecovery"
-            ReferencedContainer = "container:keyrecovery.xcodeproj">
+            BlueprintName = "PostQuantumCoin"
+            ReferencedContainer = "container:PostQuantumCoin.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -66,8 +66,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "66B5B19528285AD0007AE9F2"
             BuildableName = "keyrecovery"
-            BlueprintName = "keyrecovery"
-            ReferencedContainer = "container:keyrecovery.xcodeproj">
+            BlueprintName = "PostQuantumCoin"
+            ReferencedContainer = "container:PostQuantumCoin.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
