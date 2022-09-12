@@ -24,6 +24,7 @@
 
 blockstack::blockstack(std::string rootdirectory) {
     make_directory(rootdirectory);
+    block_directory = rootdirectory + BLOCK_FOLDER;
     index = tx_index ( rootdirectory + "utxos/", rootdirectory + "keys/" );
     latest_file = rootdirectory + "header.bin";
     
@@ -44,16 +45,11 @@ bool blockstack::verify_spend_mempool(const signed_transaction& tx) const {
 
 
 bool blockstack::fits_on_top(const block& new_block) const {
-    if(!latest.has_value()) {
-        return true;
-    }
-    return latest->secure_hash() == new_block.h.previous_block_hash;
-
+    return latest.secure_hash() == new_block.h.previous_block_hash;
 }
 
-std::optional<block> blockstack::top_block() const {
-    [[TODO]];
-    return {};
+block_header blockstack::top_header() const {
+    return latest;
 }
 
 
@@ -66,12 +62,14 @@ bool blockstack::verify_inputs(const block& new_block) const {
 }
 
 /*
- removes a block from the chain, as if it never existed.
+ removes a block from the chain
  */
 block blockstack::pop_block() {
-    [[TODO]];
-    return {};
-    // should never pop a block with no signatures, throw
+    auto blk = read_block(block_directory, latest.previous_block_hash);
+    latest = blk.h;
+    
+    index.remove_block(blk);
+    return blk;
 }
 
 

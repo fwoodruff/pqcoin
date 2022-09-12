@@ -36,16 +36,19 @@ public:
     
     block() = default;
     
-    bool verify_unsigned(const block_header& latest, uint64_t previous_time) const;
+    bool verify_unsigned(const block_header& latest, milliseconds previous_time) const;
     bool verify_signatures() const;
-
-    
     bool verify_root() const;
-
+    bool verify_size() const;
+    
     bool has_signatures() const;
     
     void remove_signatures();
+    
+    static block make_root();
 };
+
+
 
 template<>
 block deserialise(const uint8_t*& start, const uint8_t* end);

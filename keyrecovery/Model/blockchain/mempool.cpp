@@ -10,14 +10,33 @@
 #include "merkle_tree.hpp"
 
 
-/*
- After a new block, we need to creae a new block to mine
- */
-block mempool::generate_unmined_block(public_key recipient, std::optional<block_header> latest) const {
-    using namespace std::chrono;
-    block b;
 
-    b.txns = mempool;
+void mempool::sort_pool() {
+    std::sort(pool.begin(), pool.end(), [](const auto& lhs, const auto& rhs){
+        return lhs.tx.fee * rhs.tx.outputs.size() < rhs.tx.fee * lhs.tx.outputs.size();
+    });
+    
+    // give a few low fee transactions a chance
+    uint64_t rnd = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    for(int i = 0; i < 20; i++) {
+        uint64_t rnd2 = rnd * 33 + 5;
+        std::swap(pool[rnd % pool.size()], pool[rnd2 % pool.size()]);
+        rnd = rnd2;
+    }
+    
+}
+
+block mempool::generate_unmined_block(public_key recipient, block_header latest) const {
+    block b;
+    size_t blocksize = b.h.serialise().size() + 8;
+    for(const auto& tx : pool) {
+        auto stx = tx.serialise();
+        if(blocksize + stx.size() > BLOCK_SIZE) {
+            break;
+        }
+        blocksize += stx.size();
+        b.txns.push_back(tx);
+    }
     
     std::vector<collision> pool_hash;
     uint64_t f = 0;
@@ -26,28 +45,17 @@ block mempool::generate_unmined_block(public_key recipient, std::optional<block_
         f += tx.tx.fee;
     }
     
-    b.h.timestamp = time_now();
+    b.h.timestamp = system_clock::now();
     b.h.miner = recipient;
+    b.h.previous_block_hash = latest.secure_hash();
+    b.h.merkle_root = merkle_tree(pool_hash).root();
+    b.h.block_height = latest.block_height + 1;
+    b.h.mining_reward_and_fees = f + mining_reward(b.h.block_height);
+    b.h.num_tx = static_cast<uint32_t>(b.txns.size());
+    random_bytes(b.h.mining_nonce.v.data(), b.h.mining_nonce.v.size());
     
+    assert(b.serialise().size() < BLOCK_SIZE);
     
-    if(!latest.has_value()) {
-        assert(mempool.size() == 0);
-        // root block
-        b.h.previous_block_hash = {};
-        b.h.merkle_root = merkle_tree({}).root();
-        b.h.block_height = 0;
-        b.h.mining_reward_and_fees = mining_reward(0);
-        b.h.num_tx = 0;
-        random_bytes(b.h.mining_nonce.v.data(), b.h.mining_nonce.v.size());
-    } else {
-        // block
-        b.h.previous_block_hash = latest->secure_hash();
-        b.h.merkle_root = merkle_tree(pool_hash).root();
-        b.h.block_height = latest->block_height + 1;
-        b.h.mining_reward_and_fees = f + mining_reward(b.h.block_height);
-        b.h.num_tx = static_cast<uint32_t>(b.txns.size());
-        random_bytes(b.h.mining_nonce.v.data(), b.h.mining_nonce.v.size());
-    }
     return b;
 }
 
@@ -56,32 +64,38 @@ void mempool::consume_new_block(const block& new_block) {
     std::unordered_set<tx_input> block_inputs;
     for(auto stx : new_block.txns) for(auto ipp : stx.tx.inputs) { block_inputs.insert(ipp); }
     
-    mempool.erase(std::remove_if(mempool.begin(), mempool.end(), [&](const auto& item){
+    pool.erase(std::remove_if(pool.begin(), pool.end(), [&](const auto& item){
         return std::any_of(item.tx.inputs.begin(), item.tx.inputs.end(), [&](const auto& inp){
             return block_inputs.find(inp) != block_inputs.end();
         });
-    }), mempool.end());
+    }), pool.end());
     
     for(const auto& inp : block_inputs) {
         mempool_inputs.erase(inp);
     }
+    
 }
 
 void mempool::remove_block(const block& b) {
-    [[TODO]];
+    assert(b.has_signatures());
     
-    
+    pool.insert(pool.end(), b.txns.begin(), b.txns.end());
+    if(pool.size() > MAX_POOL) {
+        pool.resize(MAX_POOL);
+    }
+
 }
 
 
 bool mempool::consume_transaction(const signed_transaction& tx) {
+    if(pool.size() > MAX_POOL) { return false; }
     for(auto inp : tx.tx.inputs) {
         auto it = mempool_inputs.find(inp);
         if(it != mempool_inputs.end()) {
             return false;
         }
     }
-    mempool.push_back(tx);
+    pool.push_back(tx);
     for(auto inp : tx.tx.inputs) {
         mempool_inputs.insert(inp);
     }
@@ -89,11 +103,11 @@ bool mempool::consume_transaction(const signed_transaction& tx) {
 }
 
 bool mempool::empty() const {
-    assert( mempool.empty() == mempool_inputs.empty());
-    return mempool.empty();
+    assert( pool.empty() == mempool_inputs.empty());
+    return pool.empty();
 }
 
 void mempool::clear() {
-    mempool.clear();
+    pool.clear();
     mempool_inputs.clear();
 }

@@ -16,6 +16,11 @@
 
 
 class quarantine {
+    [[TODO]];
+    /*
+     Quarantine needs to store block_headers in memory, and reach into block folder for blocks
+     Blocks can blow memory, speed is not a concern.
+     */
 public:
     std::vector<block> v;
     void evict_shallow(uint64_t current_height);

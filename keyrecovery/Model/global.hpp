@@ -22,13 +22,22 @@
 #include <algorithm>
 
 
+/*
+ 51% attacks must be recoverable but with unpicking.
+ 51% DDoS leads to arbitrarily long reorderings, may have to trust signatures if there is a long shutdown
+ */
+
 
 using ustring = std::basic_string<uint8_t>;
+
+using mtime_point = std::chrono::time_point<std::chrono::system_clock>;
+using namespace std::chrono_literals;
+using namespace std::chrono;
 
 constexpr uint64_t MAX_COINS = 1ull<<50;
 constexpr size_t MAX_OUTPUTS = 100'000;
 
-constexpr size_t BLOCK_SIZE = 10'000'000;
+constexpr size_t BLOCK_SIZE = 40'000'000;
 constexpr size_t COIN_SIZE = 100'000'000;
 constexpr size_t INITIAL_REWARD = 50;
 constexpr size_t HALVING_RATE = 210'000;
@@ -42,7 +51,8 @@ constexpr size_t COLLISION_SIZE = COLLISION_SIZE_INTERNAL; // collision resistan
 constexpr size_t DIFFICULTY_HISTORY = 10; // base difficulty on this many blocks
 constexpr size_t SIDE_CHAIN_DEPTH = 300; // reject side chains lower
 constexpr size_t SIGNATURE_VIEW_DEPTH = 5; // when joining network, verify a few signed blocks before participating
-constexpr size_t BLOCK_TIME_MS = 600000;
+constexpr auto BLOCK_TIME = 10min;
+constexpr size_t MAX_POOL = 1'000'000;
 
 // networking
 constexpr size_t OUTBOUND_PEERS = 9;
@@ -51,14 +61,13 @@ constexpr size_t INBOUND_MAX_PEERS = 1020; // dump a few each block, to keep thi
 
 
 
+
 extern const std::string ROOT_DIRECTORY;
 extern const std::string DATA_DIRECTORY;
+extern const std::string BLOCK_FOLDER;
 
+using namespace std::chrono;
 
-inline uint64_t time_now() {
-    using namespace std::chrono;
-    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-}
 
 enum struct action {
     shutdown,
@@ -189,6 +198,10 @@ T deserialise(const uint8_t*& start, const uint8_t* end) {
  */
 
 
+
+
+
+
 template<typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
 T deserialise(const uint8_t*& start, const uint8_t* const end) {
     static_assert(!std::is_same_v<T, uint8_t>);
@@ -203,6 +216,17 @@ void serialise_vec(const std::vector<T>& objects, std::vector<uint8_t>& output) 
         obj.append_serial(output);
     }
 }
+
+template<>
+inline time_point<system_clock> deserialise(const uint8_t*& start, const uint8_t* const end) {
+    uint64_t count = deserialise<uint64_t>(start, end);
+    return time_point<system_clock>() + milliseconds(count);
+}
+
+inline void serialise_timepoint(time_point<system_clock> tp,  std::vector<uint8_t>& output) {
+    serialise_int(duration_cast<milliseconds>(tp.time_since_epoch()).count(), output);
+}
+
 
 template<typename U>
 std::vector<U> deserialise_vec(const uint8_t*& start, const uint8_t* const end) {
@@ -224,7 +248,9 @@ inline bool operator!=(const serialisable& lhs, const serialisable& rhs) {
     return !(lhs == rhs);
 }
 
-collision difficulty_target(uint64_t block_time, collision phash);
+collision difficulty_target(milliseconds block_time, collision phash);
+
+
 
 
 #endif /* types_hpp */

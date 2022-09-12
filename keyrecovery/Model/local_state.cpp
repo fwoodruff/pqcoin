@@ -10,6 +10,7 @@
 
 
 
+
 local_state::local_state(std::string directory) : chain(directory), tree(directory), hist(directory) {
     trusted = 0; 
     live = false;
@@ -26,19 +27,19 @@ void persistent_number(uint64_t t, std::string filename) {
 }
 
 std::vector<block> local_state::consume(const block& new_block) {
-    auto time = time_now();
-    if(chain.top_block()->h.timestamp + 24*60*60*1000 < time) {
+    using namespace std::chrono_literals;
+    auto time = system_clock::now();
+    // if not live, we should be querying nodes
+    if(chain.top_header().timestamp + 8h < time) {
         live = false;
     }
     if(!new_block.has_signatures() and live) return {};
     bool verified_sigs = new_block.verify_signatures();
     
     if(tree.verify_block(new_block) and (!new_block.has_signatures() or verified_sigs)) {
-        
-        // add to file
         hist.add_entry(new_block.h.secure_hash()); 
         tree.consume_block(new_block);
-        
+        tree.cleanup(chain.top_header());
         if(chain.fits_on_top(new_block) and new_block.h.verify_time()) {
             if(chain.verify_inputs(new_block) ) {
                 chain.push_block(new_block);
@@ -59,13 +60,23 @@ std::vector<block> local_state::consume(const block& new_block) {
             }
         } else {
             quarantine.v.push_back(new_block);
-            return reorg();
+            try {
+                return reorg();
+            } catch(std::runtime_error e) {
+                assert(false); // unimplemented
+                /*
+                 remove everything in utxo_index.
+                 
+                 
+                 */
+            }
         }
     }
     return {};
 }
 
 void local_state::consume(const signed_transaction& pool_tx) {
+    if(!live) return;
     bool succ = chain.verify_spend_mempool(pool_tx);
     if(succ) {
         pool.consume_transaction(pool_tx);
@@ -101,7 +112,7 @@ std::vector<block> linear(std::vector<block>::iterator begin, std::vector<block>
 
 
 std::vector<block> local_state::reorg() {
-    auto time = time_now();
+    auto time = system_clock::now();
     auto iit = std::partition(quarantine.v.begin(), quarantine.v.end(), [&](const auto& item) {
         return item.h.timestamp <= time;
     });
@@ -117,7 +128,7 @@ std::vector<block> local_state::reorg() {
     
     while(!quarantine.v.empty()) {
         auto bl = quarantine.v.front();
-        auto fork = tree.fork_point(bl.h.secure_hash(), chain.top_block()->h.secure_hash());
+        auto fork = tree.fork_point(bl.h.secure_hash(), chain.top_header().secure_hash());
         
         auto lin_chain = linear(quarantine.v.begin(), iit, bl, *fork);
         if(lin_chain.empty()) {
@@ -151,4 +162,14 @@ std::vector<block> local_state::reorg() {
         }
     }
     return result;
+}
+
+std::optional<block> local_state::mine(public_key recipient) const {
+    milliseconds prev_block_duration = tree.justwhat_duration(chain.top_header());
+    block b = pool.generate_unmined_block(recipient, chain.top_header());
+    bool val =  mining_attempt(b.h , prev_block_duration);
+    if(val) {
+        return b;
+    }
+    return std::nullopt;
 }

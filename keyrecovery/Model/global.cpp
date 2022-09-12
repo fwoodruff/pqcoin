@@ -18,6 +18,7 @@
 
 const std::string ROOT_DIRECTORY = "/Users/freddiewoodruff/Documents/Programming/keyrecovery/keyrecovery/";
 const std::string DATA_DIRECTORY = ROOT_DIRECTORY + "Data/";
+const std::string BLOCK_FOLDER = "blocks/"; // tree + stack
 
 std::vector<uint8_t> serialisable::serialise() const {
     std::vector<uint8_t> output;
@@ -74,15 +75,14 @@ serialisable_byte_array<COLLISION_SIZE> deserialise(const uint8_t*& start, const
 
 
 
-collision difficulty_target(uint64_t time_dif, collision phash) {
+collision difficulty_target(milliseconds time_dif, collision phash) {
     using bigint = fbw::uVar<COLLISION_SIZE*CHAR_BIT>;
     
     std::reverse(phash.v.begin(), phash.v.end());
     const auto previous_small_value = bigint(phash.v);
 
-
-    const auto achievement_time = bigint(time_dif);
-    constexpr auto target_time = bigint(BLOCK_TIME_MS);
+    const auto achievement_time = bigint(duration_cast<milliseconds>(time_dif).count());
+    constexpr auto target_time = bigint(duration_cast<milliseconds>(BLOCK_TIME).count());
     
     constexpr auto ONE = bigint(1);
     constexpr auto BIGGEST_SMALL_NUMBER = (ONE*ONE) << (COLLISION_SIZE*CHAR_BIT - 4);

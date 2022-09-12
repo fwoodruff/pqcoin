@@ -19,11 +19,16 @@
 
 class blockstack {
 private:
+    [[TODO]];
+    /*
+     mechanism for accessing old (7 days etc.) blocks and removing signatures
+     if we put this in history, we allow 'easy' late timestamp blocks to block signature removal
+     */
     tx_index index;
-    std::optional<block_header> latest;
+    block_header latest;
 
     std::string latest_file;
-    
+    std::string block_directory;
 public:
     blockstack(std::string directory);
     blockstack() = default;
@@ -44,8 +49,7 @@ public:
     
     void push_block(const block& bl);
     block pop_block();
-    std::optional<block> top_block() const;
-    
+    block_header top_header() const;
 
     
 };

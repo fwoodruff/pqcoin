@@ -469,14 +469,14 @@ falcon_sign_dyn_finish(shake256_context *rng,
 		sign_dyn(sv, (inner_shake256_context *)rng,
 			f, g, F, G, hm, logn, atmp);
         
-
+        
+        /* ******** MODIFIED ******** */
         memmove(sv + n, atmp, 2*n); // concatenate s2 and s1
-        
         int is_inv = is_invertible(sv, logn, atmp);
-        
         if(is_inv == 0) {
             continue;
         }
+        /* ******** MODIFIED ******** */
         
 		set_fpu_cw(oldcw);
 		es = (uint8_t *)sig;
@@ -937,27 +937,22 @@ falcon_verify_finish(const void *sig, size_t sig_len, int sig_type,
 	 * Verify signature.
 	 */
 
-    
+    /* ******** MODIFIED ******** */
     int16_t* s1 = sv + n;
-
-    
     if(!verify_recover(h, hm, s1, sv, logn, atmp)) {
         return FALCON_ERR_BADSIG;
     }
-
-    
     shake256_context pubhas;
     shake256_init_prng_from_seed(&pubhas, h, 2*n);
-    
     uint8_t pubtmp[COLLISION_SIZE_INTERNAL] = {};
-    //pubtmp[0] = 0x00 + logn;
     shake256_extract(&pubhas, pubtmp, COLLISION_SIZE_INTERNAL);
-
     for(int i = 0; i < COLLISION_SIZE_INTERNAL; i ++) {
         if(pubtmp[i] != pk[i]) {
             return FALCON_ERR_BADSIG;
         }
     }
+    /* ******** MODIFIED ******** */
+    
 	return 0;
 }
 

@@ -19,6 +19,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <queue>
 
 /* ******************************** TYPES ******************************** */
 
@@ -39,9 +40,20 @@ template<> struct std::hash<utxo_ref> {
     }
 };
 
+struct undo_data {
+    tx_input input;
+    tx_output output;
+};
 
 struct tx_index {
-
+    [[TODO]];
+    /*
+     undos should be files, new directory, name after block to undo, no need to delete on reorgs
+     */
+    std::string txhash_directory;
+    std::string pubkey_directory;
+    
+    std::deque<std::vector<undo_data>> undos;
 
     void file_system_overwrite_utxo(tx_input txhash, const std::vector<tx_output>&);
     void file_system_overwrite_utxo(public_key key, const std::vector<utxo_ref>& );
@@ -59,14 +71,13 @@ public:
     tx_index( const tx_index& ) = delete;
     tx_index& operator=( const tx_index& other) = delete;
     
-    std::string txhash_directory;
-    std::string pubkey_directory;
+    
 
     void remove_utxo(tx_input txhash, public_key out);
     void add_utxo(tx_input txhash, std::vector<tx_output> out);
     
     void add_block(const block& bl);
-    void remove_block(const block& current, const block& previous);
+    void remove_block(const block& current);
     bool verify_spend(transaction tx) const;
 };
 

@@ -16,6 +16,9 @@
 #include "utxo_index.hpp"
 
 class history {
+    /*
+     When building up chain, demand signatures for blocks younger than 5 days
+     */
     std::unordered_map<collision, size_t> entry;
     std::string collision_history_file;
 public:

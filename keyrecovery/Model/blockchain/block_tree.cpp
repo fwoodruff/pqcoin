@@ -8,18 +8,31 @@
 #include "block_tree.hpp"
 
 
-void blocktree::consume_block(const block& bl) {
-    write_block(block_directory, bl);
-    auto hah = bl.h.secure_hash();
-    hash_header.insert({hah,bl.h});
+void blocktree::cleanup(const block_header& top) {
     
-    /*
-     periodically:
-     */
-    if(bl.h.block_height % SIDE_CHAIN_DEPTH/2 == 0) {
+    if(top.block_height % 30 == 0) {
+        std::set<collision> longest;
+        auto descend = top;
+        while(true) {
+            auto va = hash_header.find(descend.previous_block_hash);
+            if(va == hash_header.end()) {  break; }
+            longest.insert(descend.previous_block_hash);
+            descend = va->second;
+        }
+
         for(auto it = hash_header.begin(); it != hash_header.end();) {
             auto [hashh, head] = *it;
-            if(head.block_height + 2*SIDE_CHAIN_DEPTH > bl.h.block_height) {
+            if(head.block_height + 2*SIDE_CHAIN_DEPTH < top.block_height) {
+                auto hsh = it->second.secure_hash();
+                auto blk = read_block(block_directory, hsh);
+                [[TODO]];
+                // leave removing signatures to history object
+                if(longest.find(hsh) != longest.end()) {
+                    blk.txns = {};
+                } else {
+                    blk.remove_signatures();
+                }
+                write_block(block_directory, blk);
                 it = hash_header.erase(it);
             } else {
                 it++;
@@ -35,8 +48,15 @@ void blocktree::consume_block(const block& bl) {
     }
 }
 
+void blocktree::consume_block(const block& bl) {
+    write_block(block_directory, bl);
+    auto hah = bl.h.secure_hash();
+    hash_header.insert({hah,bl.h});
+
+}
+
 blocktree::blocktree(std::string rootdirectory)  {
-    block_directory = rootdirectory + "blocks/";
+    block_directory = rootdirectory + BLOCK_FOLDER;
     make_directory(rootdirectory);
     make_directory(block_directory);
     
@@ -54,10 +74,18 @@ blocktree::blocktree(std::string rootdirectory)  {
     }
 }
 
+milliseconds blocktree::justwhat_duration(const block_header& top) const {
+    auto it = hash_header.find(top.previous_block_hash);
+    assert(it != hash_header.end());
+    return duration_cast<milliseconds>(top.timestamp - it->second.timestamp);
+}
+
+
 bool blocktree::verify_block(const block& new_block) const {
     if(hash_header.empty()) {
         return new_block.verify_root();
     }
+    // use file here
     // old block
     if(hash_header.find(new_block.h.secure_hash()) != hash_header.end()) {
         return false;
@@ -68,10 +96,8 @@ bool blocktree::verify_block(const block& new_block) const {
     if(it == hash_header.end()) {
         return false;
     }
-    
-    auto previt = hash_header.find(it->second.previous_block_hash);
-    assert(previt != hash_header.end() or new_block.h.block_height == 1);
-    uint64_t difficulty_time = it->second.timestamp - previt->second.timestamp;
+
+    milliseconds difficulty_time = justwhat_duration(it->second);
     
     bool qual = new_block.verify_unsigned(it->second, difficulty_time);
 

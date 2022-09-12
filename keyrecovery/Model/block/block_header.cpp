@@ -9,34 +9,35 @@
 
 
 
-bool block_header::verify_header(uint64_t previous_time, const block_header& latest) const {
-    if(block_height > latest.block_height + SIDE_CHAIN_DEPTH) { return false; }
-    if(block_height + SIDE_CHAIN_DEPTH > latest.block_height) { return false; }
+
+bool block_header::verify_header(milliseconds previous_duration, const block_header& latest) const {
     assert(previous_block_hash == latest.secure_hash());
-    if(verify_difficulty(previous_time)) { return false; }
+    if(block_height > latest.block_height + 1) { return false; }
+    if(block_height + SIDE_CHAIN_DEPTH >= latest.block_height) { return false; }
+    if(verify_difficulty(previous_duration)) { return false; }
     if(timestamp <= latest.timestamp ) { return false; }
     return true;
 }
 
 bool block_header::verify_time() const {
     using namespace std::chrono;
-    uint64_t now_ms = time_now();
-    return now_ms >= timestamp;
+    auto now_v = system_clock::now();
+    return now_v >= timestamp;
 }
 
 
-bool block_header::verify_difficulty(uint64_t prev_block_time) const {
+bool block_header::verify_difficulty(milliseconds prev_block_time) const {
     collision target = difficulty_target(prev_block_time, previous_block_hash);
     collision actual = secure_hash();
     return actual < target;
 }
 
-bool mining_attempt(block_header& header, uint64_t prev_block_time, uint64_t attempts) {
+bool mining_attempt(block_header& header, milliseconds prev_block_time, uint64_t attempts) {
     assert(attempts > 100);
     static_assert(PREIMAGE_SIZE % sizeof(uint64_t) == 0, "bad nonce size");
     
     random_bytes(header.mining_nonce.v.data(), header.mining_nonce.v.size());
-    header.timestamp = time_now();
+    header.timestamp = system_clock::now();
     
     auto blkserial = header.serialise();
     
@@ -68,7 +69,7 @@ void block_header::append_serial(std::vector<uint8_t>& output) const {
     merkle_root.append_serial(output);
     miner.append_serial(output);
     serialise_int(block_height, output);
-    serialise_int(timestamp , output);
+    serialise_timepoint(timestamp, output);
     serialise_int(num_tx , output);
     serialise_int(mining_reward_and_fees, output);
 }
@@ -81,7 +82,7 @@ block_header deserialise(const uint8_t*& start, const uint8_t* const end) {
     out.merkle_root = deserialise<collision>(start, end);
     out.miner = deserialise<public_key>(start, end);
     out.block_height = deserialise<uint64_t>( start, end);
-    out.timestamp = deserialise<uint64_t>(start, end);
+    out.timestamp = deserialise<time_point<system_clock>>(start, end);
     out.num_tx = deserialise<uint32_t>(start, end);
     out.mining_reward_and_fees = deserialise<uint64_t>(start, end);
 

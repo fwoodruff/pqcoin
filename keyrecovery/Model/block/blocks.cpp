@@ -55,6 +55,20 @@ void block::remove_signatures() {
     }
 }
 
+block block::make_root() {
+    block b;
+    b.txns = {};
+    b.h.timestamp = system_clock::now();
+    b.h.miner = {};
+    // root block
+    b.h.previous_block_hash = {};
+    b.h.merkle_root = merkle_tree({}).root();
+    b.h.block_height = 0;
+    b.h.mining_reward_and_fees = mining_reward(0);
+    b.h.num_tx = 0;
+    random_bytes(b.h.mining_nonce.v.data(), b.h.mining_nonce.v.size());
+    return b;
+}
 
 uint64_t mining_reward(uint64_t height) {
     uint64_t hv = height/HALVING_RATE;
@@ -123,10 +137,14 @@ bool block::verify_unique_inputs() const {
     return true;
 }
 
+bool block::verify_size() const {
+    return serialise().size() <= BLOCK_SIZE;
+}
 
-bool block::verify_unsigned(const block_header& latest, uint64_t previous_time) const {
+bool block::verify_unsigned(const block_header& latest, milliseconds previous_time) const {
     h.verify_header(previous_time, latest);
     if(h.num_tx != txns.size()) { return false; }
+    if(!verify_size()) { return false; }
     if(!verify_merkle_root()) { return false; }
     if(!verify_reward()) { return false; }
     if(!verify_unique_inputs()) { return false; }

@@ -6,7 +6,7 @@
 //
 
 
-#include "blockstack.hpp"
+#include "local_state.hpp"
 #include <filesystem>
 // download chain
 // event loop
@@ -18,6 +18,13 @@ int main() {
     bool success = true;
     assert(success);
     
+    
+    // make two blockchains
+    // have root mine a block and pass to the other
+    // mine a block in both.
+    // mine another block one.
+    // pass to the other
+    // expect reorg: observe through top block
 
     
     

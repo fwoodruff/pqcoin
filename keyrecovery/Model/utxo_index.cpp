@@ -151,11 +151,18 @@ void tx_index::add_utxo(tx_input txhash, std::vector<tx_output> out) {
 }
 
 void tx_index::add_block(const block& bl) {
-
+    std::vector<undo_data> dat;
     
     for(auto tx : bl.txns) {
         for(auto inpu : tx.tx.inputs) {
+            auto reorg_outputs =  file_system_fetch_utxo(inpu);
             remove_utxo(inpu, tx.tx.key);
+            
+            auto it = std::find_if(reorg_outputs.begin(), reorg_outputs.end(), [&](const auto& item) {
+                return item.recipient == tx.tx.key;
+            });
+            assert(it != reorg_outputs.end());
+            dat.push_back({inpu, *it});
         }
         tx_input inp;
         inp.previous_tx = tx.secure_hash();
@@ -171,31 +178,38 @@ void tx_index::add_block(const block& bl) {
     block_input.previous_tx = bl.h.secure_hash();
     add_utxo(block_input, {miner});
 
+    undos.push_back(std::move(dat));
     
+    if(undos.size() > SIDE_CHAIN_DEPTH) {
+        undos.pop_front();
+    }
+    // save undos to file named by block hash;
 }
 
-void tx_index::remove_block(const block& current, const block& previous) {
-    std::unordered_map<tx_input, transaction> tx_unhash;
-    for(const auto& tx : previous.txns) {
-        tx_input ip;
-        ip.previous_tx = tx.secure_hash();
+void tx_index::remove_block(const block& current) {
+    assert(!undos.empty());
+    
+    if(undos.empty()) {
+        throw std::runtime_error("reindex");
     }
+    
     for(const auto& tx : current.txns) {
         tx_input ip;
         ip.previous_tx = tx.secure_hash();
         for(const auto& output : tx.tx.outputs) {
             remove_utxo(ip, output.recipient);
         }
-        for(const auto& input : tx.tx.inputs) {
-            auto tx_it = tx_unhash.find(input);
-            assert(tx_it != tx_unhash.end());
-            const auto& old_tx = tx_it->second;
-            auto op_it = std::find(old_tx.outputs.begin(), old_tx.outputs.end(), tx.tx.key);
-            assert(op_it != old_tx.outputs.end());
-            add_utxo(input, {*op_it});
-        }
     }
-    // remove fee utxo
+    for(const auto& undo : undos.back()) {
+        add_utxo(undo.input, {undo.output}); // optimise?
+    }
+    undos.pop_back();
+    
+    tx_input block_input;
+    block_input.previous_tx = current.h.secure_hash();
+    
+    remove_utxo(block_input, current.h.miner);
+
 }
     
 bool tx_index::verify_spend(transaction tx) const {
