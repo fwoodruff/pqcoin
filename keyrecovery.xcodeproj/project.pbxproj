@@ -51,6 +51,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		664C49B328CF25D3002EBDF8 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		668DB0E928B929F9009F4313 /* blockstack.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = blockstack.cpp; sourceTree = "<group>"; };
 		668DB0EA28B929F9009F4313 /* blockstack.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = blockstack.hpp; sourceTree = "<group>"; };
 		668DB0EC28BBCEB1009F4313 /* utxo_index.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = utxo_index.cpp; sourceTree = "<group>"; };
@@ -120,6 +121,7 @@
 		66B5B18D28285AD0007AE9F2 = {
 			isa = PBXGroup;
 			children = (
+				664C49B328CF25D3002EBDF8 /* README.md */,
 				66F1EE0728CBEF6400A53CBF /* .gitignore */,
 				66B5B19828285AD0007AE9F2 /* keyrecovery */,
 				66B5B19728285AD0007AE9F2 /* Products */,
